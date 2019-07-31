@@ -4,7 +4,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 public class Mutation {
     public enum Status{
-        KILLED, SURVIVED, GENUINE, UNKNOWN
+        KILLED, SURVIVED, GENUINE
     }
 
     @JacksonXmlProperty(localName = "detected", isAttribute = true)
@@ -65,14 +65,14 @@ public class Mutation {
     }
 
     public void setStatus(String status) {
-        if(status.equalsIgnoreCase("KILLED")){
-            this.status = Status.KILLED;
+        if(status.equalsIgnoreCase("GENUINE")){
+            this.status = Status.GENUINE;
         }
         else if(status.equalsIgnoreCase("SURVIVED")){
             this.status = Status.SURVIVED;
         }
         else{
-            this.status = Status.UNKNOWN;
+            this.status = Status.KILLED;
         }
 
     }
