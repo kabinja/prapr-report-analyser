@@ -38,6 +38,7 @@ public class PaprReportAnalyser {
 
             CsvWriter.writeProjectsSummary(output, projects);
             CsvWriter.writePatchTestCoverage(output, projects);
+            CsvWriter.writeProjectBurnDown(output, projects);
 
         } catch (Exception e) {
             e.printStackTrace();

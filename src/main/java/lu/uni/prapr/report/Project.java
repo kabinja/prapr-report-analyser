@@ -1,6 +1,8 @@
 package lu.uni.prapr.report;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Project {
@@ -42,5 +44,15 @@ public class Project {
 
     public Map<String, Mutations> getBugs() {
         return bugs;
+    }
+
+    public List<Mutation> getMutations(Mutation.Status status) {
+        List<Mutation> results = new ArrayList<>();
+
+        for(Mutations mutations: bugs.values()){
+            results.addAll(mutations.getMutations(status));
+        }
+
+        return results;
     }
 }

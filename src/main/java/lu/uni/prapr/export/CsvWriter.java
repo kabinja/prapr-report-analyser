@@ -9,9 +9,12 @@ import org.apache.commons.csv.CSVPrinter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class CsvWriter {
+    private static DecimalFormat df2 = new DecimalFormat("#.00");
+
     public static void writeProjectsSummary(File outputFolder, List<Project> projects) throws IOException {
         FileWriter out = getFileWriter(outputFolder, "projectsSummary.csv");
 
@@ -32,9 +35,10 @@ public class CsvWriter {
         FileWriter out = getFileWriter(outputFolder, "patchTestCoverage.csv");
 
         String[] headers = {
-                "Name", "BugId", "Total", "Valid", "Genuine",
-                "NumberTests", "ExpectedValid", "ExpectedGenuine",
-                "AtLeastOneValid", "AtLeastOneGenuine"
+                "BugId",
+                "Total", "Valid", "Genuine", "NumberTests",
+                "ExpectedValid", "AtLeastOneValid",
+                "ExpectedGenuine", "AtLeastOneGenuine"
         };
 
         try (CSVPrinter printer = new CSVPrinter(out, CSVFormat.DEFAULT.withHeader(headers))){
@@ -45,22 +49,45 @@ public class CsvWriter {
                         List<Mutation> valid = mutations.getMutations(Mutation.Status.SURVIVED);
                         List<Mutation> genuine = mutations.getMutations(Mutation.Status.GENUINE);
 
-                        printer.printRecord(
-                                project.getName(),
-                                bugId,
-                                mutations.getMutations().size(),
-                                valid.size(),
-                                genuine.size(),
-                                mutations.getAverageNumberTests(),
-                                Simulation.calculateExpectation(valid, 0.05),
-                                Simulation.calculateExpectation(genuine, 0.05),
-                                Simulation.calculateProbabilityAtLeastOne(valid, 0.05),
-                                Simulation.calculateProbabilityAtLeastOne(genuine, 0.05)
-                        );
+                        if(!valid.isEmpty() && !genuine.isEmpty()){
+                            printer.printRecord(
+                                    bugId,
+                                    mutations.getMutations().size(),
+                                    valid.size(),
+                                    genuine.size(),
+                                    format(mutations.getAverageNumberTests()),
+                                    format(Simulation.calculateExpectation(valid, 0.05)),
+                                    format(Simulation.calculateProbabilityAtLeastOne(valid, 0.05)),
+                                    format(Simulation.calculateExpectation(genuine, 0.05)),
+                                    format(Simulation.calculateProbabilityAtLeastOne(genuine, 0.05))
+                            );
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 });
+            }
+        }
+    }
+
+    public static void writeProjectBurnDown(File outputFolder, List<Project> projects) throws IOException {
+        FileWriter out = getFileWriter(outputFolder, "projectsBurnDown.csv");
+
+        String[] headers = {"Project", "Flakiness", "ExpectedValid", "ExpectedGenuine"};
+
+        try (CSVPrinter printer = new CSVPrinter(out, CSVFormat.DEFAULT.withHeader(headers))){
+            for(Project project: projects){
+                for(double flakiness = 0.0; flakiness <= 1.0; flakiness += 0.01){
+                    List<Mutation> valid = project.getMutations(Mutation.Status.SURVIVED);
+                    List<Mutation> genuine = project.getMutations(Mutation.Status.GENUINE);
+
+                    printer.printRecord(
+                            project.getName(),
+                            format(flakiness),
+                            format(Simulation.calculateExpectation(valid, flakiness)),
+                            format(Simulation.calculateExpectation(genuine, flakiness))
+                    );
+                }
             }
         }
     }
@@ -84,5 +111,9 @@ public class CsvWriter {
         }
 
         return split[split.length - 1];
+    }
+
+    private static String format(double value){
+        return df2.format(value);
     }
 }

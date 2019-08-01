@@ -4,7 +4,6 @@ import lu.uni.prapr.report.Mutation;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class Simulation {
     public static double calculateExpectation(List<Mutation> mutations, double flakiness) {
@@ -13,7 +12,7 @@ public class Simulation {
         }
 
         final List<Double> probabilities = calculatePatchProbabilities(mutations, flakiness);
-        return probabilities.stream().mapToDouble(Double::doubleValue).sum();
+        return probabilities.stream().map(n -> 1 - n).mapToDouble(Double::doubleValue).sum();
     }
 
     public static double calculateProbabilityAtLeastOne(List<Mutation> mutations, double flakiness){
@@ -22,13 +21,7 @@ public class Simulation {
         }
 
         final List<Double> probabilities = calculatePatchProbabilities(mutations, flakiness);
-        Optional<Double> p = probabilities.stream().map(n -> 1 - n).reduce((n1, n2) -> n1 * n2);
-
-        if(!p.isPresent()){
-            return -1;
-        }
-
-        return p.get();
+        return 1 - probabilities.stream().reduce((n1, n2) -> n1 * n2).orElse(0.0);
     }
 
     private static List<Double> calculatePatchProbabilities(List<Mutation> mutations, double flakiness) {
