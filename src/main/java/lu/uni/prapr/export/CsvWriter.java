@@ -1,6 +1,7 @@
 package lu.uni.prapr.export;
 
 import lu.uni.prapr.report.Mutation;
+import lu.uni.prapr.report.Mutations;
 import lu.uni.prapr.report.Project;
 import lu.uni.prapr.simulation.Simulation;
 import org.apache.commons.csv.CSVFormat;
@@ -11,6 +12,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.Map;
 
 public class CsvWriter {
     private static DecimalFormat df2 = new DecimalFormat("#.00");
@@ -70,24 +72,26 @@ public class CsvWriter {
         }
     }
 
-    public static void writeProjectBurnDown(File outputFolder, List<Project> projects) throws IOException {
-        FileWriter out = getFileWriter(outputFolder, "projectsBurnDown.csv");
+    public static void writeProjectExpectation(File outputFolder, List<Project> projects) throws IOException {
+        FileWriter out = getFileWriter(outputFolder, "prapr_expected.csv");
 
-        String[] headers = {"Project", "Flakiness", "ExpectedValid", "ExpectedGenuine"};
+        String[] headers = {"project", "bug_id", "flakiness", "expected_valid", "expected_genuine"};
 
         try (CSVPrinter printer = new CSVPrinter(out, CSVFormat.DEFAULT.withHeader(headers))){
             for(Project project: projects){
-                for(double flakiness = 0.0; flakiness <= 1.0; flakiness += 0.01){
-                    List<Mutation> valid = project.getMutations(Mutation.Status.SURVIVED);
-                    List<Mutation> genuine = project.getMutations(Mutation.Status.GENUINE);
+                for(Map.Entry<String, Mutations> entry : project.getBugs().entrySet())
+                    for(double flakiness = 0.0; flakiness <= 1.0; flakiness += 0.01){
+                        List<Mutation> valid = entry.getValue().getMutations(Mutation.Status.SURVIVED);
+                        List<Mutation> genuine = entry.getValue().getMutations(Mutation.Status.GENUINE);
 
-                    printer.printRecord(
-                            project.getName(),
-                            format(flakiness),
-                            format(Simulation.calculateExpectation(valid, flakiness)),
-                            format(Simulation.calculateExpectation(genuine, flakiness))
-                    );
-                }
+                        printer.printRecord(
+                                project.getName(),
+                                entry.getKey(),
+                                format(flakiness),
+                                Simulation.calculateExpectation(valid, flakiness),
+                                Simulation.calculateExpectation(genuine, flakiness)
+                        );
+                    }
             }
         }
     }
