@@ -18,7 +18,7 @@ public class CsvWriter {
     private static DecimalFormat df2 = new DecimalFormat("#.00");
 
     public static void writeProjectsSummary(File outputFolder, List<Project> projects) throws IOException {
-        FileWriter out = getFileWriter(outputFolder, "projectsSummary.csv");
+        FileWriter out = getFileWriter(outputFolder, "projects_summary.csv");
 
         String[] headers = {"Name", "Killed", "Survived"};
 
@@ -34,7 +34,7 @@ public class CsvWriter {
     }
 
     public static void writePatchTestCoverage(File outputFolder, List<Project> projects) throws IOException {
-        FileWriter out = getFileWriter(outputFolder, "patchTestCoverage.csv");
+        FileWriter out = getFileWriter(outputFolder, "patch_test_coverage.csv");
 
         String[] headers = {
                 "BugId",
@@ -73,7 +73,7 @@ public class CsvWriter {
     }
 
     public static void writeProjectExpectation(File outputFolder, List<Project> projects) throws IOException {
-        FileWriter out = getFileWriter(outputFolder, "prapr_expected.csv");
+        FileWriter out = getFileWriter(outputFolder, "expected.csv");
 
         String[] headers = {"project", "bug_id", "flakiness", "expected_valid", "expected_genuine"};
 
