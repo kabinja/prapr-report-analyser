@@ -75,23 +75,27 @@ public class CsvWriter {
     public static void writeProjectExpectation(File outputFolder, List<Project> projects) throws IOException {
         FileWriter out = getFileWriter(outputFolder, "expected.csv");
 
-        String[] headers = {"project", "bug_id", "flakiness", "expected_valid", "expected_genuine"};
+        String[] headers = {"project", "bug_id", "average_test_number", "flakiness", "expected_valid", "expected_genuine"};
 
         try (CSVPrinter printer = new CSVPrinter(out, CSVFormat.DEFAULT.withHeader(headers))){
-            for(Project project: projects){
-                for(Map.Entry<String, Mutations> entry : project.getBugs().entrySet())
-                    for(double flakiness = 0.0; flakiness <= 1.0; flakiness += 0.01){
+            for(Project project: projects) {
+                for (Map.Entry<String, Mutations> entry : project.getBugs().entrySet()){
+                    String averageNumberTest = format(entry.getValue().getAverageNumberTests());
+
+                    for (double flakiness = 0.0; flakiness <= 1.0; flakiness += 0.01) {
                         List<Mutation> valid = entry.getValue().getMutations(Mutation.Status.SURVIVED);
                         List<Mutation> genuine = entry.getValue().getMutations(Mutation.Status.GENUINE);
 
                         printer.printRecord(
                                 project.getName(),
                                 entry.getKey(),
+                                averageNumberTest,
                                 format(flakiness),
                                 Simulation.calculateExpectation(valid, flakiness),
                                 Simulation.calculateExpectation(genuine, flakiness)
                         );
                     }
+                }
             }
         }
     }
