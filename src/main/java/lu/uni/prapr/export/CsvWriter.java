@@ -51,7 +51,7 @@ public class CsvWriter {
                         List<Mutation> valid = mutations.getMutations(Mutation.Status.SURVIVED);
                         List<Mutation> genuine = mutations.getMutations(Mutation.Status.GENUINE);
 
-                        if(!valid.isEmpty() && !genuine.isEmpty()){
+                        if(!valid.isEmpty()){
                             printer.printRecord(
                                     bugId,
                                     mutations.getMutations().size(),
